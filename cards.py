@@ -15,6 +15,25 @@ class Card():
     def __eq__(self, other):
         return self.rank == other.rank and self.suit == other.suit
 
+class Cards():
+    def __init__(self, cards):
+        self.cards = cards
+    def pop_n(self,n):
+        """returns and deletes the initial n cards"""
+        popped = self.cards[:n]
+        del self.cards[:n]
+        return popped
+    def shuffle(self):
+        random.shuffle(self.cards)
+    def __len__(self):
+        return len(self.cards)
+
+class Deck(Cards):
+    def __init__(self):
+        self.cards = [Card(i,j) for i in range(1,14) for j in ['D','C','H','S']]
+        
+
+
 class Player():
     def __init__(self, hand):
         self.hand = hand
@@ -27,20 +46,22 @@ class Player():
 
 class Human(Player):
     def move(self):
-        play_cards = input("Which of these cards {} do you play?".format(self.pretty_str()))
+        play_cards = input("Which of these cards {} do you play?\n".format(self.pretty_str()))
         return 0,0
 
-deck = [Card(i,j) for i in range(1,14) for j in ['D','C','H','S']]
-random.shuffle(deck)
+deck = Deck()
+deck.shuffle()
 #(deck)
+
 
 player_amount = 3
 hand_size = len(deck)//player_amount
-players = [Human(deck[:hand_size]) for i in range(3)]
+players = [Human(deck.pop_n(hand_size)) for i in range(3)]
 winner = False
-turnplayer = players[0]
+turn_player = players[0]
+turn_rank = 1
 while not winner:
-    player_cards, player_claim = turnplayer.move()
-    break
+    player_cards, player_claim = turn_player.move()
+    turn_player = players[(players.index(turn_player) + 1)%len(players)]
     
 print(players)
