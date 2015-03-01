@@ -95,13 +95,17 @@ class Human(Player):
             play_cards = Cards([Card.pretty_to_card(i) for i in play_cards.split()])
             try:
                 assert len(play_cards) >= 1
-                return self.cards.remove(play_cards)
+                return Cards(self.cards.remove(play_cards))
             except Exception as e:
                 print ('Those are not proper cards values.  Example of proper values is: Ac 4d Kd')
                 #raise e
-    def call_bs(self, play):
-        pass
-
+    def call_bs(self, play, turn_rank):
+        bs = input("Call BS?  [y/n]")
+        if bs == 'y':
+            return True
+        else:
+            return False
+            
 def i2s(i:int):
     try:
         return ['no', 'one', 'two', 'three', 'four', 'five', 'six'][i]
@@ -124,7 +128,9 @@ while not winner:
     player_cards = turn_player.move()
     print("Player {} played {} {}{}".format(player_index, i2s(len(player_cards)), Card.trans_dict[turn_rank-1], 's'*(len(player_cards) > 1)))
     for player in [p for p in players if p != turn_player]:
-        player.call_bs(len(player_cards))
+        if player.call_bs(len(player_cards), turn_rank):
+            #evalute_bs(player_cards, turn_rank):
+            pass
     
     turn_player = players[(player_index + 1)%len(players)]
     turn_rank = (turn_rank + 1)%13
