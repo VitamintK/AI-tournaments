@@ -9,6 +9,8 @@ class Card():
         self.suit = suit
     def __str__(self):
         return Card.trans_dict[self.rank - 1] + self.suit
+    def __repr__(self):
+        return str(self)
     def __gt__(self, other):
         return self.rank > other.rank or (self.rank == other.rank and
                                           Card.suit_ord.index(self.suit) > Card.suit_ord.index(other.suit))
@@ -30,7 +32,7 @@ class Cards():
                     self.cards.remove(i)
                     break
             else:
-                raise Exception
+                raise KeyError("{} not found in {}".format(i, self.cards))
     def pop_n(self,n):
         """returns and deletes the initial n cards"""
         popped = self.cards[:n]
