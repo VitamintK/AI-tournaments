@@ -37,16 +37,19 @@ class Pot:
 class Poker_Board:
     def __init__(self, num_of_players = 3, init_money = 1000, ante = 100, big_blind = None):
         self.players = [Player(money = init_money) for i in range(num_of_players)]
-        self.pots = [Pot()]
+        self.live_pot = Pot()
+        self.pots = [self.live_pot]
         self.ante = ante
         self.big_blind = big_blind
+        self.dealer = players[0]
     def deal_hand(self):
         for player in self.players:
             player.get_dealt()
             bet_amount = player.bet(self.ante)
             if bet_amount == self.ante:
-                self.pots[main_pot].add_bet(player, bet_amount)
+                self.live_pot.add_bet(player, bet_amount)
             else:
+                
                 
                 
                 
