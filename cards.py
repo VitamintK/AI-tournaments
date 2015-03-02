@@ -39,8 +39,11 @@ class Part_Card(Card):
             return self.suit == other.suit
 
 class Cards():
-    def __init__(self, cards):
-        self.cards = cards
+    def __init__(self, cards = None):
+        if cards == None:
+            self.cards = []
+        else:
+            self.cards = cards
     def remove(self, cards):
         rmvd = []
         crdcopy = self.cards[:]
@@ -67,6 +70,13 @@ class Cards():
         return str(self.cards)
     def __iter__(self):
         return (i for i in self.cards)
+    def __add__(self, other):
+        if isinstance(other, Cards):
+            return Cards(self.cards + other.cards)
+        elif isinstance(other, Card):
+            return Cards(self.cards + [other])
+        else:
+            raise TypeError
 
 class Deck(Cards):
     def __init__(self):
@@ -97,10 +107,10 @@ class Human(Player):
                 assert len(play_cards) >= 1
                 return Cards(self.cards.remove(play_cards))
             except Exception as e:
-                print ('Those are not proper cards values.  Example of proper values is: Ac 4d Kd')
+                print ('Those are not proper cards values.  Example of proper values is: a a 2')
                 #raise e
     def call_bs(self, play, turn_rank):
-        bs = input("Call BS?  [y/n]")
+        bs = input("Call BS?  [y/n] ")
         if bs == 'y':
             return True
         else:
@@ -112,6 +122,9 @@ def i2s(i:int):
     except:
         return i
     
+def is_bs(player_cards: Cards, turn_rank):
+    return not all(card.rank == turn_rank for card in player_cards)
+
  
 deck = Deck()
 deck.shuffle()
@@ -123,15 +136,24 @@ players = [Human(deck.pop_n(hand_size)) for i in range(3)]
 winner = False
 turn_player = players[0]
 turn_rank = 1
+com_cards = Cards()
 while not winner:
     player_index = players.index(turn_player)
     player_cards = turn_player.move()
+    com_cards += player_cards
     print("Player {} played {} {}{}".format(player_index, i2s(len(player_cards)), Card.trans_dict[turn_rank-1], 's'*(len(player_cards) > 1)))
     for player in [p for p in players if p != turn_player]:
         if player.call_bs(len(player_cards), turn_rank):
-            #evalute_bs(player_cards, turn_rank):
-            pass
-    
+            if is_bs(player_cards, turn_rank):
+                turn_player.cards += com_cards
+                com_cards = Cards()
+                print("Cards were BS.  Turn cards were {} instead of {} {}{}.".format(
+                    player_cards, i2s(len(player_cards)), Card.trans_dict[turn_rank-1], 's'*(len(player_cards) > 1)))
+                break
+            else:
+                player.cards += com_cards
+                com_cards = Cards()
+                break
     turn_player = players[(player_index + 1)%len(players)]
     turn_rank = (turn_rank + 1)%13
     
