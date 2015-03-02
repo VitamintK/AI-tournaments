@@ -57,11 +57,13 @@ class Cards():
                 raise KeyError("{} not found in {}".format(i, self.cards))
         self.cards = crdcopy
         return rmvd
-    def pop_n(self,n):
+    def pop_n(self,n = 1):
         """returns and deletes the initial n cards"""
         popped = self.cards[:n]
         del self.cards[:n]
         return Cards(popped)
+    def count(self, rank = None, suit = None):
+        return len([card for card in self.cards if (not rank or card.rank == rank) and (not suit or card.suit == suit)])
     def shuffle(self):
         random.shuffle(self.cards)
     def __len__(self):
@@ -123,6 +125,15 @@ class Human(Player):
             return True
         else:
             return False
+
+class AI(Player):
+    def move(self):
+        return self.cards.pop_n(1)
+    def call_bs(self, play, turn_rank):
+        print(self.cards.count(rank = turn_rank))
+        if self.cards.count(rank = turn_rank) >=4:
+            print(self.cards)
+            return True
             
 def i2s(i:int):
     try:
@@ -140,12 +151,14 @@ deck.shuffle()
 
 player_amount = 2
 hand_size = len(deck)//player_amount
-players = [Human(deck.pop_n(hand_size)) for i in range(player_amount)]
+#players = [Human(deck.pop_n(hand_size)) for i in range(player_amount)]
+players = [Human(deck.pop_n(hand_size)), AI(deck.pop_n(hand_size))]
 winner = False
 turn_player = players[0]
 turn_rank = 1
 com_cards = Cards()
 while not winner:
+    print('-')
     player_index = players.index(turn_player)
     player_cards = turn_player.move()
     com_cards += player_cards
@@ -165,6 +178,7 @@ while not winner:
                 com_cards = Cards()
                 break
     turn_player = players[(player_index + 1)%len(players)]
-    turn_rank = (turn_rank + 1)%13
+    turn_rank = (turn_rank)%13 + 1
+    #print(turn_rank)
     
 print(players)
