@@ -83,14 +83,18 @@ class Deck(Cards):
         self.cards = [Card(i,j) for i in range(1,14) for j in ['D','C','H','S']]
 
 class Player():
-    def __init__(self, cards: Cards):
+    def __init__(self, cards: Cards, title = None):
+        if title == None:
+            self.title = random.choice(["Adam","Bob","Chris","Dude"])
+        else:
+            self.title = title
         self.cards = cards
     def pretty_str(self):
         return ' '.join([str(i) for i in sorted(self.cards)])
     def __len__(self):
         return len(self.cards)
     def __str__(self):
-        return "{} <- size {}".format(self.cards, len(self.cards))
+        return self.title
     def move(self):
         pass
     def call_bs(self, play):
@@ -102,12 +106,16 @@ class Human(Player):
             print('---')
             print("It is now your turn to play {}s.".format(Card.trans_dict[turn_rank-1]))
             play_cards = input("Which of these cards {} do you play?\n".format(self.pretty_str())).upper()
-            play_cards = Cards([Card.pretty_to_card(i) for i in play_cards.split()])
+            try:
+                play_cards = Cards([Card.pretty_to_card(i) for i in play_cards.split()])
+            except ValueError:
+                print('These are not proper cards values.  Proper values are: a a 2')
+                continue
             try:
                 assert len(play_cards) >= 1
                 return Cards(self.cards.remove(play_cards))
             except Exception as e:
-                print ('Those are not proper cards values.  Example of proper values is: a a 2')
+                print ("You don't have those cards.")
                 #raise e
     def call_bs(self, play, turn_rank):
         bs = input("Call BS?  [y/n] ")
@@ -130,9 +138,9 @@ deck = Deck()
 deck.shuffle()
 #(deck)
 
-player_amount = 3
+player_amount = 2
 hand_size = len(deck)//player_amount
-players = [Human(deck.pop_n(hand_size)) for i in range(3)]
+players = [Human(deck.pop_n(hand_size)) for i in range(player_amount)]
 winner = False
 turn_player = players[0]
 turn_rank = 1
@@ -146,11 +154,13 @@ while not winner:
         if player.call_bs(len(player_cards), turn_rank):
             if is_bs(player_cards, turn_rank):
                 turn_player.cards += com_cards
+                print("BS! Turn cards were {} instead of {} {}{}. {} cards given to {}".format(
+                    player_cards, i2s(len(player_cards)), Card.trans_dict[turn_rank-1], 's'*(len(player_cards) > 1),
+                    len(com_cards), turn_player))
                 com_cards = Cards()
-                print("Cards were BS.  Turn cards were {} instead of {} {}{}.".format(
-                    player_cards, i2s(len(player_cards)), Card.trans_dict[turn_rank-1], 's'*(len(player_cards) > 1)))
                 break
             else:
+                print("NOT BS! {} cards given to {}".format(len(com_cards), player))
                 player.cards += com_cards
                 com_cards = Cards()
                 break
