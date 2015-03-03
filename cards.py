@@ -1,5 +1,8 @@
 import random
 
+"""BS"""
+
+
 class Card():
     a_high = True
     suit_ord = ['D', 'C', 'H', 'S']
@@ -162,12 +165,12 @@ while not winner:
     player_index = players.index(turn_player)
     player_cards = turn_player.move()
     com_cards += player_cards
-    print("Player {} played {} {}{}".format(player_index, i2s(len(player_cards)), Card.trans_dict[turn_rank-1], 's'*(len(player_cards) > 1)))
+    print("Player {} claims to play {} {}{}".format(player_index, i2s(len(player_cards)), Card.trans_dict[turn_rank-1], 's'*(len(player_cards) > 1)))
     for player in [p for p in players if p != turn_player]:
         if player.call_bs(len(player_cards), turn_rank):
             if is_bs(player_cards, turn_rank):
                 turn_player.cards += com_cards
-                print("BS! Turn cards were {} instead of {} {}{}. {} cards given to {}".format(
+                print("BS! The cards were {} instead of {} {}{}. {} cards given to {}".format(
                     player_cards, i2s(len(player_cards)), Card.trans_dict[turn_rank-1], 's'*(len(player_cards) > 1),
                     len(com_cards), turn_player))
                 com_cards = Cards()
@@ -177,6 +180,9 @@ while not winner:
                 player.cards += com_cards
                 com_cards = Cards()
                 break
+    if len(turn_player.cards) == 0:
+        print("{} wins!  Congrats".format(turn_player))
+        break
     turn_player = players[(player_index + 1)%len(players)]
     turn_rank = (turn_rank)%13 + 1
     #print(turn_rank)
