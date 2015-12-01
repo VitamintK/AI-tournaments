@@ -59,7 +59,7 @@ class Cards():
             else:
                 raise KeyError("{} not found in {}".format(i, self.cards))
         self.cards = crdcopy
-        return rmvd
+        return Cards(rmvd)
     def pop_n(self,n = 1):
         """returns and deletes the initial n cards"""
         popped = self.cards[:n]
@@ -69,6 +69,8 @@ class Cards():
         return len([card for card in self.cards if (not rank or card.rank == rank) and (not suit or card.suit == suit)])
     def shuffle(self):
         random.shuffle(self.cards)
+    #def extend(self, cards:Cards):
+    #    self.cards.extend(cards.cards)
     def __len__(self):
         return len(self.cards)
     def __str__(self):
@@ -101,12 +103,14 @@ class Player():
     def __str__(self):
         return self.title
     def move(self):
+        #should this be a function of turn_rank?
         pass
-    def call_bs(self, play):
+    def call_bs(self, play, turn_rank):
         pass
 
 class Human(Player):
     def move(self):
+        #this should be a function of turn_rank?
         while True:
             print('---')
             print("It is now your turn to play {}s.".format(Card.trans_dict[turn_rank-1]))
@@ -118,9 +122,9 @@ class Human(Player):
                 continue
             try:
                 assert len(play_cards) >= 1
-                return Cards(self.cards.remove(play_cards))
+                return self.cards.remove(play_cards)
             except Exception as e:
-                print ("You don't have those cards.")
+                print ("You don't have those cards or you tried playing nothing.")
                 #raise e
     def call_bs(self, play, turn_rank):
         bs = input("Call BS?  [y/n] ")
@@ -131,10 +135,21 @@ class Human(Player):
 
 class AI(Player):
     def move(self):
+        tcount = self.cards.count(rank = turn_rank)
+        if tcount > 0:
+            return self.cards.remove([Part_Card(rank=turn_rank) for _ in range(tcount)])
+        else:
+            bluff_rank = range(1,14)[turn_rank - 1 - player_amount]
+            while bluff_rank != turn_rank:
+                try:
+                    returnself.cards.remove([bluff_rank])
+                except:
+                    pass
+                bluff_rank = range(1,14)[bluff_rank - 1 - player_amount]
         return self.cards.pop_n(1)
     def call_bs(self, play, turn_rank):
         print(self.cards.count(rank = turn_rank))
-        if self.cards.count(rank = turn_rank) >=4:
+        if 4 - play < self.cards.count(rank = turn_rank):
             print(self.cards)
             return True
             
@@ -152,10 +167,13 @@ deck = Deck()
 deck.shuffle()
 #(deck)
 
-player_amount = 2
+player_amount = 3
 hand_size = len(deck)//player_amount
 #players = [Human(deck.pop_n(hand_size)) for i in range(player_amount)]
-players = [Human(deck.pop_n(hand_size)), AI(deck.pop_n(hand_size))]
+players = [Human(deck.pop_n(hand_size)), AI(deck.pop_n(hand_size)), AI(deck.pop_n(hand_size))]
+#player_amount = len(players)
+#hand_size = len(deck)//player_amount
+
 winner = False
 turn_player = players[0]
 turn_rank = 1
@@ -166,7 +184,7 @@ while not winner:
     player_cards = turn_player.move()
     com_cards += player_cards
     print("Player {} claims to play {} {}{}".format(player_index, i2s(len(player_cards)), Card.trans_dict[turn_rank-1], 's'*(len(player_cards) > 1)))
-    for player in [p for p in players if p != turn_player]:
+    for player in [p for p in players if p != turn_player]: #rewrite this to be in order starting with turn_player.
         if player.call_bs(len(player_cards), turn_rank):
             if is_bs(player_cards, turn_rank):
                 turn_player.cards += com_cards
