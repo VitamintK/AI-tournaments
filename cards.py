@@ -142,8 +142,9 @@ class AI(Player):
             bluff_rank = range(1,14)[turn_rank - 1 - player_amount]
             while bluff_rank != turn_rank:
                 try:
-                    returnself.cards.remove([bluff_rank])
+                    return self.cards.remove([Part_Card(rank=bluff_rank)])
                 except:
+                    
                     pass
                 bluff_rank = range(1,14)[bluff_rank - 1 - player_amount]
         return self.cards.pop_n(1)
@@ -167,10 +168,11 @@ deck = Deck()
 deck.shuffle()
 #(deck)
 
-player_amount = 3
+player_types = [AI, AI]
+player_amount = len(player_types)
 hand_size = len(deck)//player_amount
 #players = [Human(deck.pop_n(hand_size)) for i in range(player_amount)]
-players = [Human(deck.pop_n(hand_size)), AI(deck.pop_n(hand_size)), AI(deck.pop_n(hand_size))]
+players = [player_type(deck.pop_n(hand_size)) for player_type in player_types]
 #player_amount = len(players)
 #hand_size = len(deck)//player_amount
 
