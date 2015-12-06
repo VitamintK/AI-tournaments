@@ -133,6 +133,44 @@ class Human(Player):
         else:
             return False
 
+#I HAVE NO IDEA WHAT I'M DOING!!! subprocesses + shit
+import subprocess
+#import os
+class ExternalAI(Player):
+    def __init__(self, cards: Cards, shell_cmd:str):
+        #self.f = os.tmpfile()
+        self.p = subprocess.Popen(shell_cmd.split(), stdout=subprocess.PIPE, stdin = subprocess.PIPE)
+        #idk what to do with the rror... either pipe it to STDOUT or a new PIPE.
+        super().__init__(cards)
+        #input format: first line will be num of players, and number of cards that each player (e.g. you) has.
+        #              second line will be the cards.
+        #x =
+        self.p.communicate(input= "{} {}\n{}".format(player_amount, hand_size, self.pretty_str()).encode())
+        #print(x)
+    def move(self, turn_rank):
+        #input format: some way to signify that this is the bginning of a move prompt.  the turn rank.  and the hand (optional)
+        output = self.p.communicate(input="PLAY\n{}\n{}".format(turn_rank, self.pretty_str()))
+            #maybe need b'string here'
+        #copy-pasted code from Human class.  poop copy-pasting.  can't think of better method (where to store shared sourcecode)
+        try:
+            play_cards = Cards([Card.pretty_to_card(i) for i in output.split()])
+        except ValueError:
+            raise ValueError('These are not proper cards values.  Proper values are e.g.: a a 2')
+            #continue
+        try:
+            assert len(play_cards) >= 1
+            return self.cards.remove(play_cards)
+        except Exception as e:
+            raise e("You don't have those cards or you tried playing nothing.")
+    def call_bs(self, play, turn_rank):
+        output = self.p.communicate(input="BS\n{}{}".format(turn_rank, play))
+        if output.decode() == 1:
+            return True
+        else:
+            return False
+
+
+
 class AI(Player):
     def move(self):
         tcount = self.cards.count(rank = turn_rank)
@@ -168,11 +206,11 @@ deck = Deck()
 deck.shuffle()
 #(deck)
 
-player_types = [AI, AI]
+player_types = [(Human,[]), (ExternalAI, ['python test.py'])]
 player_amount = len(player_types)
 hand_size = len(deck)//player_amount
 #players = [Human(deck.pop_n(hand_size)) for i in range(player_amount)]
-players = [player_type(deck.pop_n(hand_size)) for player_type in player_types]
+players = [player_type(deck.pop_n(hand_size), *args) for player_type, args in player_types]
 #player_amount = len(players)
 #hand_size = len(deck)//player_amount
 
@@ -207,4 +245,4 @@ while not winner:
     turn_rank = (turn_rank)%13 + 1
     #print(turn_rank)
     
-print(players)
+print([str(player.cards) for player in players])
